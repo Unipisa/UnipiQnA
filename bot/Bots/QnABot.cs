@@ -3,7 +3,9 @@
 //
 // Generated with Bot Builder V4 SDK Template for Visual Studio EchoBot v4.5.0
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
@@ -34,9 +36,33 @@ namespace Microsoft.BotBuilderSamples.Bots
             await UserState.SaveChangesAsync(turnContext, false, cancellationToken);
         }
 
-        protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken) =>
-            // Run the Dialog with the new message Activity.
-            await Dialog.RunAsync(turnContext, ConversationState.CreateProperty<DialogState>(nameof(DialogState)), cancellationToken);
+        protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
+        {
+            if (turnContext.Activity.Text.ToLower().Contains("versione"))
+            {
+                if (System.Reflection.Assembly.GetExecutingAssembly() != null)
+                {
+                    System.Reflection.Assembly asm = System.Reflection.Assembly.GetExecutingAssembly();
+                    if (FileVersionInfo.GetVersionInfo(asm.Location) != null)
+                    {
+                        FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
+                        System.IO.FileInfo fileInfo = new System.IO.FileInfo(asm.Location);
+                        DateTime lastModified = fileInfo.LastWriteTime;
+
+                        string bldLevel = "Versione " + string.Format("{0}.{1}.{2}", fvi.ProductMajorPart, fvi.ProductMinorPart, fvi.ProductBuildPart);
+                        bldLevel += ", data " + lastModified.Year.ToString() + "/" + lastModified.Month.ToString() + "/" + lastModified.Day.ToString();
+                        await turnContext.SendActivityAsync(MessageFactory.Text(bldLevel), cancellationToken);
+                    }
+                    else
+                        await turnContext.SendActivityAsync(MessageFactory.Text($"Perdonami, ora non riesco a risponderti."), cancellationToken);
+                }
+                else
+                    await turnContext.SendActivityAsync(MessageFactory.Text($"Perdonami, ora non riesco a risponderti."), cancellationToken);
+            }
+            else
+                await Dialog.RunAsync(turnContext, ConversationState.CreateProperty<DialogState>(nameof(DialogState)), cancellationToken);
+        }
 
         protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
         {
