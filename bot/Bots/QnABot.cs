@@ -29,6 +29,7 @@ namespace Microsoft.BotBuilderSamples.Bots
 
         public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)
         {
+            await turnContext.SendActivityAsync(new Bot.Schema.Activity { Type = ActivityTypes.Typing }, cancellationToken);
             await base.OnTurnAsync(turnContext, cancellationToken);
 
             // Save any state changes that might have occurred during the turn.
