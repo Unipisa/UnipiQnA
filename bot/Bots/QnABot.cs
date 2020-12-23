@@ -47,25 +47,31 @@ namespace Microsoft.BotBuilderSamples.Bots
             // Recuperare uno user name e salvarlo in membersAdded? Verifichiamo che la cosa abbia senso                    
             await turnContext.SendActivityAsync(MessageFactory.Text($"Benvenuto."), cancellationToken);
 
-            // [TBD] SE esiste un member.Name (per esempio trasmesso dal canale Teams o dall'autenticazione Microsoft) possiamo usarlo qui
-            //await turnContext.SendActivityAsync($"Benvenuto, {member.Name}.", cancellationToken: cancellationToken);
-            if (System.Reflection.Assembly.GetExecutingAssembly() != null)
+            foreach (var member in membersAdded)
             {
-                System.Reflection.Assembly asm = System.Reflection.Assembly.GetExecutingAssembly();
-                if (FileVersionInfo.GetVersionInfo(asm.Location) != null)
+                if (member.Id != turnContext.Activity.Recipient.Id)
                 {
-                    FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                    // [TBD] SE esiste un member.Name (per esempio trasmesso dal canale Teams o dall'autenticazione Microsoft) possiamo usarlo qui
+                    //await turnContext.SendActivityAsync($"Benvenuto, {member.Name}.", cancellationToken: cancellationToken);
+                    if (System.Reflection.Assembly.GetExecutingAssembly() != null)
+                    {
+                        System.Reflection.Assembly asm = System.Reflection.Assembly.GetExecutingAssembly();
+                        if (FileVersionInfo.GetVersionInfo(asm.Location) != null)
+                        {
+                            FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
-                    System.IO.FileInfo fileInfo = new System.IO.FileInfo(asm.Location);
-                    DateTime lastModified = fileInfo.LastWriteTime;
+                            System.IO.FileInfo fileInfo = new System.IO.FileInfo(asm.Location);
+                            DateTime lastModified = fileInfo.LastWriteTime;
 
-                    string bldLevel = "Qui è Unipi QnA, Versione " + string.Format("{0}.{1}.{2}", fvi.ProductMajorPart, fvi.ProductMinorPart, fvi.ProductBuildPart);
-                    bldLevel += ", build del " + lastModified.Year.ToString() + "/" + lastModified.Month.ToString() + "/" + lastModified.Day.ToString();
-                    await turnContext.SendActivityAsync(MessageFactory.Text(bldLevel), cancellationToken);
+                            string bldLevel = "Qui è Unipi QnA, Versione " + string.Format("{0}.{1}.{2}", fvi.ProductMajorPart, fvi.ProductMinorPart, fvi.ProductBuildPart);
+                            bldLevel += ", build del " + lastModified.Year.ToString() + "/" + lastModified.Month.ToString() + "/" + lastModified.Day.ToString();
+                            await turnContext.SendActivityAsync(MessageFactory.Text(bldLevel), cancellationToken);
+                        }
+                    }
+                    string sTimeOfDay = DateTime.Now.Hour + ":" + DateTime.Now.Minute + ":" + DateTime.Now.Second + " del " + DateTime.Now.Day + "/" + DateTime.Now.Month + "/" + DateTime.Now.Year;
+                    await turnContext.SendActivityAsync("Sono le ore " + sTimeOfDay, cancellationToken: cancellationToken);
                 }
             }
-            string sTimeOfDay = DateTime.Now.Hour + ":" + DateTime.Now.Minute + ":" + DateTime.Now.Second + " del " + DateTime.Now.Day + "/" + DateTime.Now.Month + "/" + DateTime.Now.Year;
-            await turnContext.SendActivityAsync("Sono le ore " + sTimeOfDay, cancellationToken: cancellationToken);
         }
     }
 }
