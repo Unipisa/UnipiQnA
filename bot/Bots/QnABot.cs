@@ -39,42 +39,33 @@ namespace Microsoft.BotBuilderSamples.Bots
 
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
-            if (turnContext.Activity.Text.ToLower().Contains("versione"))
-            {
-                if (System.Reflection.Assembly.GetExecutingAssembly() != null)
-                {
-                    System.Reflection.Assembly asm = System.Reflection.Assembly.GetExecutingAssembly();
-                    if (FileVersionInfo.GetVersionInfo(asm.Location) != null)
-                    {
-                        FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
-
-                        System.IO.FileInfo fileInfo = new System.IO.FileInfo(asm.Location);
-                        DateTime lastModified = fileInfo.LastWriteTime;
-
-                        string bldLevel = "Versione " + string.Format("{0}.{1}.{2}", fvi.ProductMajorPart, fvi.ProductMinorPart, fvi.ProductBuildPart);
-                        bldLevel += ", data " + lastModified.Year.ToString() + "/" + lastModified.Month.ToString() + "/" + lastModified.Day.ToString();
-                        await turnContext.SendActivityAsync(MessageFactory.Text(bldLevel), cancellationToken);
-                    }
-                    else
-                        await turnContext.SendActivityAsync(MessageFactory.Text($"Perdonami, ora non riesco a risponderti."), cancellationToken);
-                }
-                else
-                    await turnContext.SendActivityAsync(MessageFactory.Text($"Perdonami, ora non riesco a risponderti."), cancellationToken);
-            }
-            else
-                await Dialog.RunAsync(turnContext, ConversationState.CreateProperty<DialogState>(nameof(DialogState)), cancellationToken);
+            await Dialog.RunAsync(turnContext, ConversationState.CreateProperty<DialogState>(nameof(DialogState)), cancellationToken);
         }
 
         protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
         {
-            foreach (var member in membersAdded)
+            // Recuperare uno user name e salvarlo in membersAdded? Verifichiamo che la cosa abbia senso                    
+            await turnContext.SendActivityAsync(MessageFactory.Text($"Benvenuto."), cancellationToken);
+
+            // [TBD] SE esiste un member.Name (per esempio trasmesso dal canale Teams o dall'autenticazione Microsoft) possiamo usarlo qui
+            //await turnContext.SendActivityAsync($"Benvenuto, {member.Name}.", cancellationToken: cancellationToken);
+            if (System.Reflection.Assembly.GetExecutingAssembly() != null)
             {
-                if (member.Id != turnContext.Activity.Recipient.Id)
+                System.Reflection.Assembly asm = System.Reflection.Assembly.GetExecutingAssembly();
+                if (FileVersionInfo.GetVersionInfo(asm.Location) != null)
                 {
-                    var userName = turnContext.Activity.From.Name;
-                    await turnContext.SendActivityAsync(MessageFactory.Text($"Benvenuto."), cancellationToken); // (MessageFactory.Text($"Benvenuto, {userName }"), cancellationToken);
+                    FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
+                    System.IO.FileInfo fileInfo = new System.IO.FileInfo(asm.Location);
+                    DateTime lastModified = fileInfo.LastWriteTime;
+
+                    string bldLevel = "Qui è Unipi QnA, Versione " + string.Format("{0}.{1}.{2}", fvi.ProductMajorPart, fvi.ProductMinorPart, fvi.ProductBuildPart);
+                    bldLevel += ", build del " + lastModified.Year.ToString() + "/" + lastModified.Month.ToString() + "/" + lastModified.Day.ToString();
+                    await turnContext.SendActivityAsync(MessageFactory.Text(bldLevel), cancellationToken);
                 }
             }
+            string sTimeOfDay = DateTime.Now.Hour + ":" + DateTime.Now.Minute + ":" + DateTime.Now.Second + " del " + DateTime.Now.Day + "/" + DateTime.Now.Month + "/" + DateTime.Now.Year;
+            await turnContext.SendActivityAsync("Sono le ore " + sTimeOfDay, cancellationToken: cancellationToken);
         }
     }
 }
